@@ -1,6 +1,7 @@
 """Base primititve classes for working with Storm."""
 from __future__ import absolute_import, print_function, unicode_literals
-
+from gevent import monkey
+monkey.patch_all(sys=True)
 from logging import Handler
 from traceback import format_exc
 

@@ -2,9 +2,6 @@
 Utilities for interprocess communication between Python and Storm.
 """
 from __future__ import absolute_import, print_function, unicode_literals
-import gevent
-from gevent import monkey
-monkey.patch_sys()
 try:
     import simplejson as json
 except ImportError:
