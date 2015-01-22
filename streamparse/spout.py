@@ -11,7 +11,7 @@ from six import PY3
 from .base import Component
 from .ipc import (read_handshake, read_command, read_task_ids, send_message,
                   json)
-
+import gevent
 
 log = logging.getLogger('streamparse.spout')
 
@@ -171,16 +171,22 @@ class Spout(Component):
         self._setup_component(storm_conf, context)
 
         try:
+            pool_size = storm_conf.get('stremparse.pool_size',10)
+            self._pool = gevent.pool.Pool(pool_size)
             self.initialize(storm_conf, context)
             while True:
-                cmd = read_command()
-                if cmd['command'] == 'next':
-                    self.next_tuple()
-                if cmd['command'] == 'ack':
-                    self.ack(cmd['id'])
-                if cmd['command'] == 'fail':
-                    self.fail(cmd['id'])
-                send_message({'command': 'sync'})
+                if not self._pool.full():
+                    cmd = read_command()
+                    if cmd['command'] == 'next':
+                        self._pool.apply_async(self.next_tuple)
+                    if cmd['command'] == 'ack':
+                        self._pool.apply_async(self.ack,(cmd['id']))
+                    if cmd['command'] == 'fail':
+                        self._pool.apply_async(self.fail,(cmd['id']))
+                    send_message({'command': 'sync'})
+                else:
+                    gevent.sleep(1)
+                
         except Exception as e:
             log.error('Error in %s.run()', self.__class__.__name__,
                       exc_info=True)

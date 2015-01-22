@@ -2,7 +2,9 @@
 Utilities for interprocess communication between Python and Storm.
 """
 from __future__ import absolute_import, print_function, unicode_literals
-
+import gevent
+from gevent import monkey
+monkey.patch_sys()
 try:
     import simplejson as json
 except ImportError:
@@ -56,7 +58,6 @@ if hasattr(sys.stdout, 'buffer'):
     _stdout = sys.stdout.buffer
 else:
     _stdout = sys.stdout
-
 
 class LogStream(object):
     """Object that implements enough of the Python stream API to be used as

@@ -9,14 +9,13 @@ import threading
 import time
 import warnings
 import logging
-
+from functools import partial
 from six import iteritems, reraise, PY3
 
 from .base import Component
 from .ipc import (read_handshake, read_tuple, read_task_ids, send_message,
                   json, Tuple)
-
-
+import gevent
 log = logging.getLogger('streamparse.bolt')
 
 
@@ -213,19 +212,24 @@ class Bolt(Component):
         self._setup_component(storm_conf, context)
 
         try:
+            pool_size = storm_conf.get('stremparse.pool_size',10)
+            self._pool = gevent.pool.Pool(pool_size)            
             self.initialize(storm_conf, context)
             while True:
-                self._current_tups = [read_tuple()]
-                tup = self._current_tups[0]
-                if tup.task == -1 and tup.stream == '__heartbeat':
-                    send_message({'command': 'sync'})
+                if not self._pool.full():
+                    self._current_tups = [read_tuple()]
+                    tup = self._current_tups[0]
+                    if tup.task == -1 and tup.stream == '__heartbeat':
+                        send_message({'command': 'sync'})
+                    else:
+                        if self.auto_ack:
+                            callback_ack = partial(self.ack,tup = tup)
+                        else:
+                            callback_ack = None
+                        self._pool.apply_async(self.process,kwds={'tup':tup},callback=callback_ack)
+                        self._current_tups = []
                 else:
-                    self.process(tup)
-                    if self.auto_ack:
-                        self.ack(tup)
-                    # reset so that we don't accidentally fail the wrong tuples
-                    # if a successive call to read_tuple fails
-                    self._current_tups = []
+                    gevent.sleep(1)
         except Exception as e:
             log_msg = "Exception in {}.run()".format(self.__class__.__name__)
 
