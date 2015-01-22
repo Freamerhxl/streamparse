@@ -1,7 +1,7 @@
 import importlib
 
 from docopt import docopt
-
+from gevent import monkey
 def main():
     """streamparse.run: run a bolt/spout class
 
@@ -16,6 +16,7 @@ def main():
     """
     # Import the component class and run it
     args = docopt(main.__doc__)
+    monkey.patch_all(sys = True)
     mod_name, cls_name = args['<target_class>'].rsplit('.', 1)
     mod = importlib.import_module(mod_name)
     cls = getattr(mod, cls_name)
