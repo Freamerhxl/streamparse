@@ -185,7 +185,7 @@ class Spout(Component):
                         self._pool.apply_async(self.fail,(cmd['id']))
                     send_message({'command': 'sync'})
                 else:
-                    gevent.sleep(1)
+                    gevent.sleep(0.1)
                 
         except Exception as e:
             log.error('Error in %s.run()', self.__class__.__name__,

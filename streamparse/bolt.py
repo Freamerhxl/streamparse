@@ -229,7 +229,7 @@ class Bolt(Component):
                         self._pool.apply_async(self.process,kwds={'tup':tup},callback=callback_ack)
                         self._current_tups = []
                 else:
-                    gevent.sleep(1)
+                    gevent.sleep(0.1)
         except Exception as e:
             log_msg = "Exception in {}.run()".format(self.__class__.__name__)
 
