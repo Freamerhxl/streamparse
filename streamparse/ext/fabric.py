@@ -92,6 +92,7 @@ def activate_env(env_name=None):
     # env.storm_nimbus = [env_config["nimbus"].split(":")[0]]
     env.storm_workers = env_config["workers"]
     env.user = env_config["user"]
+    env.pool_size - env_config.get('pool_size',10)
     env.log_path = env_config.get("log_path") or \
                    env_config.get("log", {}).get("path")
     env.virtualenv_root = env_config.get("virtualenv_root") or \

@@ -212,7 +212,7 @@ class Bolt(Component):
         self._setup_component(storm_conf, context)
 
         try:
-            pool_size = storm_conf.get('stremparse.pool_size',10)
+            pool_size = storm_conf.get('streamparse.pool_size',10)
             self._pool = gevent.pool.Pool(pool_size)            
             self.initialize(storm_conf, context)
             while True:

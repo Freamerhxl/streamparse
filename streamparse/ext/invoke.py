@@ -165,6 +165,7 @@ def run_local_topology(name=None, time=5, par=2, options=None, debug=False):
     # Python logging settings
     if not os.path.isdir("logs"):
         os.makedirs("logs")
+    cmd.append("--option 'streamparse.pool_size= 100'")   
     log_path = os.path.join(os.getcwd(), "logs")
     print("Routing Python logging to {}.".format(log_path))
     cmd.append("--option 'streamparse.log.path=\"{}\"'"
@@ -260,7 +261,9 @@ def submit_topology(name=None, env_name="prod", par=2, options=None,
         if isinstance(log_config.get("level"), string_types):
             cmd.append("--option 'streamparse.log.level=\"{}\"'"
                        .format(log_config["level"].lower()))
-
+        if isinstance(env_config.get('pool_size'),int):
+            cmd.append("--option 'streamparse.pool_size={}'"
+                       .format(env_config.get('pool_size')))
         if options is None:
             options = []
         for option in options:
